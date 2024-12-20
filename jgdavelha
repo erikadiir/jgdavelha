@@ -1,0 +1,141 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(TicTacToeApp());
+}
+
+// Classe principal que inicializa o aplicativo
+class TicTacToeApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false, // Remove a faixa de debug
+      home: TicTacToeGame(),
+    );
+  }
+}
+
+// Tela principal do jogo
+class TicTacToeGame extends StatefulWidget {
+  @override
+  _TicTacToeGameState createState() => _TicTacToeGameState();
+}
+
+// Estado do jogo
+class _TicTacToeGameState extends State<TicTacToeGame> {
+  // Tabuleiro do jogo, inicialmente vazio
+  List<String> board = List.filled(9, '', growable: false);
+
+  // Variável para alternar entre os jogadores
+  bool isXTurn = true;
+
+  // Mensagem para mostrar o resultado do jogo
+  String message = '';
+
+  // Método que reseta o jogo
+  void resetGame() {
+    setState(() {
+      board = List.filled(9, '');
+      isXTurn = true;
+      message = '';
+    });
+  }
+
+  // Verifica se há um vencedor
+  void checkWinner() {
+    // Todas as combinações possíveis de vitória
+    List<List<int>> winningCombinations = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+
+    // Checa cada combinação
+    for (var combination in winningCombinations) {
+      String a = board[combination[0]];
+      String b = board[combination[1]];
+      String c = board[combination[2]];
+      if (a == b && b == c && a != '') {
+        setState(() {
+          message = 'Jogador ${a} venceu!';
+        });
+        return;
+      }
+    }
+
+    // Checa se todas as casas foram preenchidas (empate)
+    if (!board.contains('')) {
+      setState(() {
+        message = 'Empate!';
+      });
+    }
+  }
+
+  // Método chamado quando o jogador clica em uma célula do tabuleiro
+  void onTileTap(int index) {
+    if (board[index] == '' && message == '') {
+      setState(() {
+        board[index] = isXTurn ? 'X' : 'O'; // Alterna entre 'X' e 'O'
+        isXTurn = !isXTurn; // Troca o turno
+        checkWinner(); // Verifica o vencedor após cada jogada
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Jogo da Velha'),
+        centerTitle: true,
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Tabuleiro do jogo
+          GridView.builder(
+            shrinkWrap: true, // Limita o tamanho do GridView
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // 3 colunas
+            ),
+            itemCount: 9, // Total de células
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () => onTileTap(index), // Quando o jogador toca na célula
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red), // Bordas das células
+                  ),
+                  child: Center(
+                    child: Text(
+                      board[index], // Mostra 'X', 'O' ou vazio
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          SizedBox(height: 20), // Espaço entre o tabuleiro e o texto
+          Text(
+            message, // Mensagem de vitória ou empate
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: resetGame, // Botão para reiniciar o jogo
+            child: Text('Reiniciar'),
+          ),
+        ],
+      ),
+    );
+  }
+}
